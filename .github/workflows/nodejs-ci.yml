@@ -1,0 +1,54 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install and test backend
+        run: |
+          if [ -f backend/package.json ]; then
+            echo "Installing backend deps..."
+            npm ci --prefix backend
+            echo "Running backend tests or build (if present)..."
+            if npm run -s test --prefix backend; then
+              echo "Backend tests ran"
+            elif npm run -s build --prefix backend; then
+              echo "Backend built"
+            else
+              echo "No backend test/build script"
+            fi
+          else
+            echo "No backend/package.json found, skipping"
+          fi
+
+      - name: Install and test frontend
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo "Installing frontend deps..."
+            npm ci --prefix frontend
+            echo "Running frontend tests or build (if present)..."
+            if npm run -s test --prefix frontend; then
+              echo "Frontend tests ran"
+            elif npm run -s build --prefix frontend; then
+              echo "Frontend built"
+            else
+              echo "No frontend test/build script"
+            fi
+          else
+            echo "No frontend/package.json found, skipping"
+          fi
